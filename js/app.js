@@ -38,7 +38,7 @@ const cardIcons = [
 ];
 let timer;
 // The checkpoints correspond to what the value of game.move is when we update
-const starCheckpoints = new Set([0, 1, 2, 3]);
+const starCheckpoints = new Set([0, 12, 20, 30]);
 
 // Cached elements
 const scorePanelElement = document.querySelector(".score-panel");
@@ -52,52 +52,6 @@ const modalStarsElement = document.querySelector(".modal-stars");
 const modalTimeElement = document.querySelector(".time");
 const modalScoreElement = document.querySelector(".score");
 const newGameButton = document.querySelector(".new-game");
-
-function startTimer() {
-  // Make sure only one timer exists at a time
-  window.clearInterval(timer);
-  timer = setInterval(() => {
-    game.time += 1;
-    game.timeDisplay = createTimeDisplayString();
-    timerElement.innerHTML = game.timeDisplay;
-  }, 1000);
-}
-
-function handleCardClick(e) {
-  if (game.time === 0) {
-    startTimer();
-  }
-  const card = e.target.tagName === "I" ? e.target.parentElement : e.target;
-  matchCards(card);
-}
-
-function createDeck() {
-  // Double the number of icons so it's ready to become a game deck.
-  const icons = [...cardIcons, ...cardIcons];
-
-  // Create the different card types as <li> elements
-  const deck = icons.map(iconClassName => {
-    const icon = document.createElement("i");
-    icon.classList.add("fa", iconClassName);
-
-    const card = document.createElement("li");
-    card.classList.add("card");
-    card.append(icon);
-
-    card.addEventListener("click", handleCardClick);
-
-    return card;
-  });
-
-  return shuffle(deck);
-}
-
-function addDeckToPage() {
-  deckElement.innerHTML = "";
-  game.deck.forEach(card => {
-    deckElement.appendChild(card);
-  });
-}
 
 function flipStarIcons(starIcons) {
   starIcons.forEach((icon, index) => {
@@ -118,12 +72,6 @@ function updateStarElements(init = false) {
     .querySelector(".stars")
     .querySelectorAll(".fa");
   flipStarIcons(starIcons);
-}
-
-function countMove() {
-  game.moves += 1;
-  movesElement.innerHTML = game.moves;
-  updateStarElements();
 }
 
 function flipCard(card) {
@@ -177,6 +125,12 @@ function checkForMatch() {
   game.activeCards = [];
 }
 
+function countMove() {
+  game.moves += 1;
+  movesElement.innerHTML = game.moves;
+  updateStarElements();
+}
+
 function matchCards(card) {
   // Ignore clicks in certain cases:
   if (
@@ -195,6 +149,52 @@ function matchCards(card) {
     countMove();
     checkForMatch();
   }
+}
+
+function startTimer() {
+  // Make sure only one timer exists at a time
+  window.clearInterval(timer);
+  timer = setInterval(() => {
+    game.time += 1;
+    game.timeDisplay = createTimeDisplayString();
+    timerElement.innerHTML = game.timeDisplay;
+  }, 1000);
+}
+
+function handleCardClick(e) {
+  if (game.time === 0) {
+    startTimer();
+  }
+  const card = e.target.tagName === "I" ? e.target.parentElement : e.target;
+  matchCards(card);
+}
+
+function addDeckToPage() {
+  deckElement.innerHTML = "";
+  game.deck.forEach(card => {
+    deckElement.appendChild(card);
+  });
+}
+
+function createDeck() {
+  // Double the number of icons so it's ready to become a game deck.
+  const icons = [...cardIcons, ...cardIcons];
+
+  // Create the different card types as <li> elements
+  const deck = icons.map(iconClassName => {
+    const icon = document.createElement("i");
+    icon.classList.add("fa", iconClassName);
+
+    const card = document.createElement("li");
+    card.classList.add("card");
+    card.append(icon);
+
+    card.addEventListener("click", handleCardClick);
+
+    return card;
+  });
+
+  return shuffle(deck);
 }
 
 function init() {
