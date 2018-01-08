@@ -105,23 +105,24 @@ function checkForMatch() {
     }
     game.activeCards = [];
   } else {
-    game.freeze = true;
+    // Hide the shown cards
+    game.isHidingCards = true;
     window.setTimeout(() => {
       game.activeCards.forEach(card => {
         card.classList.toggle("show");
       });
       game.activeCards = [];
-      game.freeze = false;
+      game.isHidingCards = false;
     }, 750);
   }
 }
 
 function handleCardClick(e) {
-  if (game.freeze) return;
+  if (game.isHidingCards) return;
   const card = e.target.tagName === "I" ? e.target.parentElement : e.target;
 
   // Ignore click if the card is already open or the cards are being hidden.
-  if (card.classList.contains("open") || card.classList.contains("match")) {
+  if (card.classList.contains("show") || card.classList.contains("match")) {
     return;
   }
 
