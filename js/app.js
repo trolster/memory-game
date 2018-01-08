@@ -132,15 +132,6 @@ function countMove() {
 }
 
 function matchCards(card) {
-  // Ignore clicks in certain cases:
-  if (
-    game.activeCards.length === 2 ||
-    card.classList.contains("open") ||
-    card.classList.contains("match")
-  ) {
-    return;
-  }
-
   flipCard(card);
   game.activeCards.push(card);
 
@@ -152,8 +143,10 @@ function matchCards(card) {
 }
 
 function startTimer() {
-  // Make sure only one timer exists at a time
-  window.clearInterval(timer);
+  game.deck.forEach(card => {
+    card.removeEventListener("click", startTimer);
+  });
+
   timer = setInterval(() => {
     game.time += 1;
     game.timeDisplay = createTimeDisplayString();
@@ -162,10 +155,15 @@ function startTimer() {
 }
 
 function handleCardClick(e) {
-  if (game.time === 0) {
-    startTimer();
-  }
   const card = e.target.tagName === "I" ? e.target.parentElement : e.target;
+  // Ignore clicks in certain cases:
+  if (
+    game.activeCards.length === 2 ||
+    card.classList.contains("open") ||
+    card.classList.contains("match")
+  ) {
+    return;
+  }
   matchCards(card);
 }
 
@@ -190,6 +188,7 @@ function createDeck() {
     card.append(icon);
 
     card.addEventListener("click", handleCardClick);
+    card.addEventListener("click", startTimer);
 
     return card;
   });
