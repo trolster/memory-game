@@ -38,6 +38,7 @@ const modalTimeElement = document.querySelector(".time");
 const modalScoreElement = document.querySelector(".score");
 const newGameButton = document.querySelector(".new-game");
 
+// Icons for the card faces
 const cardIcons = [
   "fa-diamond",
   "fa-paper-plane-o",
@@ -50,11 +51,16 @@ const cardIcons = [
 ];
 
 // The checkpoints correspond to what the value of game.move is when we update
+// the star rating. So you get three stars up until the 11th move, then two
+// stars until the 20th move, and finally zero stars at the 30th move.
 const starCheckpoints = [0, 12, 20, 30];
+
 const game = {};
 let timer;
 
 function startTimer() {
+  // Remove the event listener from all the cards so it only starts on the
+  // first click.
   game.deck.forEach(card => {
     card.removeEventListener("click", startTimer);
   });
@@ -67,13 +73,15 @@ function startTimer() {
 }
 
 function flipStarIcons() {
+  // It game.move isn't equal to one of our checkpoints, we return out.
   if (!starCheckpoints.includes(game.moves)) return;
+
   game.stars = game.moves === 0 ? game.stars : (game.stars -= 1);
 
   function flip(icon, i) {
     icon.classList = i >= game.stars ? "fa fa-star-o" : "fa fa-star";
   }
-  // Flip all the star icons in the page
+  // Flip all the star icons in the page.
   scorePanelStarElements.forEach(flip);
   modalStarElements.forEach(flip);
 }
@@ -92,8 +100,8 @@ function endGame() {
 function checkForMatch() {
   // We are checking if the icons class names match:
   const [card1, card2] = game.activeCards;
-  const icon = card1.firstChild.classList.item(1);
-  const isMatch = card2.firstChild.classList.contains(icon);
+  const cardIcon = card1.firstChild.classList.item(1);
+  const isMatch = card2.firstChild.classList.contains(cardIcon);
 
   if (isMatch) {
     game.matchedPairs += 1;
@@ -105,23 +113,25 @@ function checkForMatch() {
     }
     game.activeCards = [];
   } else {
-    // Hide the shown cards
-    game.isHidingCards = true;
+    // Avoid card interactions while two cards are being shown.
+    game.isShowingTwoCards = true;
     window.setTimeout(() => {
       game.activeCards.forEach(card => {
         card.classList.toggle("show");
       });
       game.activeCards = [];
-      game.isHidingCards = false;
+      game.isShowingTwoCards = false;
     }, 750);
   }
 }
 
 function handleCardClick(e) {
-  if (game.isHidingCards) return;
+  // Ignore clicks when two cards are being shown.
+  if (game.isShowingTwoCards) return;
+
   const card = e.target.tagName === "I" ? e.target.parentElement : e.target;
 
-  // Ignore click if the card is already open or the cards are being hidden.
+  // Ignore click if the card is already open.
   if (card.classList.contains("show") || card.classList.contains("match")) {
     return;
   }
@@ -138,6 +148,7 @@ function handleCardClick(e) {
 }
 
 function createDeck() {
+  // Double the number of cardIcons in the list.
   const cardFaces = [...cardIcons, ...cardIcons];
 
   const deck = cardFaces.map(cardFaceName => {
