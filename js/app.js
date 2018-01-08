@@ -37,6 +37,8 @@ const cardIcons = [
   "fa-bomb"
 ];
 let timer;
+// The checkpoints correspond to what the value of game.move is when we update
+const starCheckpoints = new Set([0, 1, 2, 3]);
 
 // Cached elements
 const scorePanelElement = document.querySelector(".score-panel");
@@ -97,28 +99,25 @@ function addDeckToPage() {
   });
 }
 
-function updateStarElements() {
-  // Check the stars
-  if (
-    game.moves !== 0 &&
-    game.moves !== 12 &&
-    game.moves !== 20 &&
-    game.moves !== 30
-  ) {
-    return;
-  }
-  game.stars = game.moves === 0 ? game.stars : (game.stars -= 1);
-
-  const starIcons = scorePanelElement.querySelectorAll(".fa");
-  flipStarIcons(starIcons);
-}
-
 function flipStarIcons(starIcons) {
   starIcons.forEach((icon, index) => {
     if (index + 1 > game.stars) {
       icon.classList.replace("fa-star", "fa-star-o");
+    } else {
+      icon.classList.replace("fa-star-o", "fa-star");
     }
   });
+}
+
+function updateStarElements(init = false) {
+  // Only check the stars if the game.moves corresponds to a checkpoint
+  if (!starCheckpoints.has(game.moves)) return;
+  game.stars = init ? game.stars : (game.stars -= 1);
+
+  const starIcons = scorePanelElement
+    .querySelector(".stars")
+    .querySelectorAll(".fa");
+  flipStarIcons(starIcons);
 }
 
 function countMove() {
@@ -138,10 +137,6 @@ function hideCards(cards) {
       flipCard(card);
     });
   }, 750);
-}
-
-function closeModal() {
-  modalElement.style.display = "none";
 }
 
 function openModal() {
@@ -204,7 +199,8 @@ function matchCards(card) {
 
 function init() {
   window.clearInterval(timer);
-  closeModal();
+  modalElement.style.display = "none";
+
   game.time = 0;
   game.moves = 0;
   game.stars = 3;
@@ -214,7 +210,7 @@ function init() {
   game.activeCards = [];
 
   // Reset DOM elements and add a deck
-  updateStarElements();
+  updateStarElements(true);
   movesElement.innerHTML = game.moves;
   timerElement.innerHTML = game.timeDisplay;
   addDeckToPage();
