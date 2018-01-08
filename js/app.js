@@ -27,21 +27,23 @@ function createTimeDisplayString() {
 // Game data
 const game = {};
 const cardIcons = [
-  "fa-diamond",
-  "fa-paper-plane-o",
-  "fa-anchor",
-  "fa-bolt",
-  "fa-cube",
-  "fa-leaf",
+  // "fa-diamond",
+  // "fa-paper-plane-o",
+  // "fa-anchor",
+  // "fa-bolt",
+  // "fa-cube",
+  // "fa-leaf",
   "fa-bicycle",
   "fa-bomb"
 ];
 let timer;
 // The checkpoints correspond to what the value of game.move is when we update
-const starCheckpoints = new Set([0, 12, 20, 30]);
+const starCheckpoints = [0, 1, 3, 4];
 
 // Cached elements
-const scorePanelElement = document.querySelector(".score-panel");
+const scorePanelStarElements = document.querySelectorAll(
+  ".score-panel .stars .fa"
+);
 const timerElement = document.querySelector(".timer");
 const movesElement = document.querySelector(".moves");
 const restartElement = document.querySelector(".restart");
@@ -49,98 +51,10 @@ const deckElement = document.querySelector(".deck");
 // Modal
 const modalElement = document.querySelector(".modal");
 const modalStarsElement = document.querySelector(".modal-stars");
+const modalStarElements = document.querySelectorAll(".modal-stars .fa");
 const modalTimeElement = document.querySelector(".time");
 const modalScoreElement = document.querySelector(".score");
 const newGameButton = document.querySelector(".new-game");
-
-function flipStarIcons(starIcons) {
-  starIcons.forEach((icon, index) => {
-    if (index + 1 > game.stars) {
-      icon.classList.replace("fa-star", "fa-star-o");
-    } else {
-      icon.classList.replace("fa-star-o", "fa-star");
-    }
-  });
-}
-
-function updateStarElements(init = false) {
-  // Only check the stars if the game.moves corresponds to a checkpoint
-  if (!starCheckpoints.has(game.moves)) return;
-  game.stars = init ? game.stars : (game.stars -= 1);
-
-  const starIcons = scorePanelElement
-    .querySelector(".stars")
-    .querySelectorAll(".fa");
-  flipStarIcons(starIcons);
-}
-
-function flipCard(card) {
-  card.classList.toggle("show");
-  card.classList.toggle("open");
-}
-
-function hideCards(cards) {
-  window.setTimeout(() => {
-    cards.forEach(card => {
-      flipCard(card);
-    });
-  }, 750);
-}
-
-function openModal() {
-  // Scroll to the top of the window and display the modal
-  window.scrollTo(0, 0);
-  modalElement.style.display = "flex";
-
-  // Set the star rating
-  const starIcons = modalStarsElement.querySelectorAll(".fa");
-  flipStarIcons(starIcons);
-
-  modalTimeElement.innerHTML = game.timeDisplay;
-  modalScoreElement.innerHTML = game.moves;
-}
-
-function endGame() {
-  window.clearInterval(timer);
-  openModal();
-}
-
-function checkForMatch() {
-  // We are checking if the icons class names match:
-  const cardIcon = game.activeCards[0].firstChild.classList.item(1);
-  const matched = game.activeCards[1].firstChild.classList.contains(cardIcon);
-
-  if (matched) {
-    game.matchedPairs += 1;
-    game.activeCards.forEach(card => {
-      card.classList.add("match");
-    });
-    // Check if game has ended
-    if (game.matchedPairs === cardIcons.length) {
-      endGame();
-    }
-  } else {
-    hideCards(game.activeCards);
-  }
-  game.activeCards = [];
-}
-
-function countMove() {
-  game.moves += 1;
-  movesElement.innerHTML = game.moves;
-  updateStarElements();
-}
-
-function matchCards(card) {
-  flipCard(card);
-  game.activeCards.push(card);
-
-  // If two cards are face up we count it as a move and check for a match
-  if (game.activeCards.length === 2) {
-    countMove();
-    checkForMatch();
-  }
-}
 
 function startTimer() {
   game.deck.forEach(card => {
@@ -154,31 +68,89 @@ function startTimer() {
   }, 1000);
 }
 
-function handleCardClick(e) {
-  const card = e.target.tagName === "I" ? e.target.parentElement : e.target;
-  // Ignore clicks in certain cases:
-  if (
-    game.activeCards.length === 2 ||
-    card.classList.contains("open") ||
-    card.classList.contains("match")
-  ) {
-    return;
+function flipStarIcons() {
+  if (!starCheckpoints.includes(game.moves)) return;
+  game.stars = game.moves === 0 ? game.stars : (game.stars -= 1);
+
+  function flip(icon, i) {
+    icon.classList = i >= game.stars ? "fa fa-star-o" : "fa fa-star";
   }
-  matchCards(card);
+  // Flip all the star icons in the page
+  scorePanelStarElements.forEach(flip);
+  modalStarElements.forEach(flip);
 }
 
-function addDeckToPage() {
-  deckElement.innerHTML = "";
-  game.deck.forEach(card => {
-    deckElement.appendChild(card);
-  });
+function flipCard(card) {
+  card.classList.toggle("show");
+  card.classList.toggle("open");
+}
+
+function hideCards(cards) {
+  game.freeze = true;
+  window.setTimeout(() => {
+    cards.forEach(card => {
+      flipCard(card);
+    });
+    game.freeze = false;
+  }, 750);
+}
+
+function endGame() {
+  // Scroll to the top of the window and display the modal
+  window.scrollTo(0, 0);
+  modalElement.style.display = "flex";
+
+  window.clearInterval(timer);
+
+  modalTimeElement.innerHTML = game.timeDisplay;
+  modalScoreElement.innerHTML = game.moves;
+}
+
+function checkForMatch() {
+  // We are checking if the icons class names match:
+  const [card1, card2] = game.activeCards;
+  const icon = card1.firstChild.classList.item(1);
+  const isMatch = card2.firstChild.classList.contains(icon);
+
+  if (isMatch) {
+    game.matchedPairs += 1;
+    card1.classList.add("match");
+    card2.classList.add("match");
+    // Check if game has ended.
+    if (game.matchedPairs === cardIcons.length) {
+      endGame();
+    }
+  } else {
+    hideCards(game.activeCards);
+  }
+  game.activeCards = [];
+}
+
+function handleCardClick(e) {
+  if (game.freeze) return;
+  const card = e.target.tagName === "I" ? e.target.parentElement : e.target;
+
+  // Ignore click if the card is already open or the cards are being hidden.
+  if (card.classList.contains("open") || card.classList.contains("match")) {
+    return;
+  }
+
+  flipCard(card);
+  game.activeCards.push(card);
+
+  if (game.activeCards.length === 2) {
+    game.moves += 1;
+    movesElement.innerHTML = game.moves;
+    flipStarIcons();
+    checkForMatch();
+  }
 }
 
 function createDeck() {
   // Double the number of icons so it's ready to become a game deck.
   const icons = [...cardIcons, ...cardIcons];
 
-  // Create the different card types as <li> elements
+  // Create the different card types as <li> elements.
   const deck = icons.map(iconClassName => {
     const icon = document.createElement("i");
     icon.classList.add("fa", iconClassName);
@@ -209,10 +181,14 @@ function init() {
   game.activeCards = [];
 
   // Reset DOM elements and add a deck
-  updateStarElements(true);
+  flipStarIcons();
   movesElement.innerHTML = game.moves;
   timerElement.innerHTML = game.timeDisplay;
-  addDeckToPage();
+
+  deckElement.innerHTML = "";
+  game.deck.forEach(card => {
+    deckElement.appendChild(card);
+  });
 }
 
 newGameButton.addEventListener("click", init);
