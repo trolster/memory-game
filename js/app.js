@@ -24,23 +24,7 @@ function createTimeDisplayString() {
   return `${minutesDisplay}:${secondsDisplay}`;
 }
 
-// Game data
-const game = {};
-const cardIcons = [
-  // "fa-diamond",
-  // "fa-paper-plane-o",
-  // "fa-anchor",
-  // "fa-bolt",
-  // "fa-cube",
-  // "fa-leaf",
-  "fa-bicycle",
-  "fa-bomb"
-];
-let timer;
-// The checkpoints correspond to what the value of game.move is when we update
-const starCheckpoints = [0, 1, 3, 4];
-
-// Cached elements
+// CACHED ELEMENTS
 const scorePanelStarElements = document.querySelectorAll(
   ".score-panel .stars .fa"
 );
@@ -48,13 +32,27 @@ const timerElement = document.querySelector(".timer");
 const movesElement = document.querySelector(".moves");
 const restartElement = document.querySelector(".restart");
 const deckElement = document.querySelector(".deck");
-// Modal
 const modalElement = document.querySelector(".modal");
-const modalStarsElement = document.querySelector(".modal-stars");
 const modalStarElements = document.querySelectorAll(".modal-stars .fa");
 const modalTimeElement = document.querySelector(".time");
 const modalScoreElement = document.querySelector(".score");
 const newGameButton = document.querySelector(".new-game");
+
+const cardIcons = [
+  "fa-diamond",
+  "fa-paper-plane-o",
+  "fa-anchor",
+  "fa-bolt",
+  "fa-cube",
+  "fa-leaf",
+  "fa-bicycle",
+  "fa-bomb"
+];
+
+// The checkpoints correspond to what the value of game.move is when we update
+const starCheckpoints = [0, 12, 20, 30];
+const game = {};
+let timer;
 
 function startTimer() {
   game.deck.forEach(card => {
@@ -80,23 +78,8 @@ function flipStarIcons() {
   modalStarElements.forEach(flip);
 }
 
-function flipCard(card) {
-  card.classList.toggle("show");
-  card.classList.toggle("open");
-}
-
-function hideCards(cards) {
-  game.freeze = true;
-  window.setTimeout(() => {
-    cards.forEach(card => {
-      flipCard(card);
-    });
-    game.freeze = false;
-  }, 750);
-}
-
 function endGame() {
-  // Scroll to the top of the window and display the modal
+  // Scroll to the top of the window and display the modal.
   window.scrollTo(0, 0);
   modalElement.style.display = "flex";
 
@@ -120,10 +103,17 @@ function checkForMatch() {
     if (game.matchedPairs === cardIcons.length) {
       endGame();
     }
+    game.activeCards = [];
   } else {
-    hideCards(game.activeCards);
+    game.freeze = true;
+    window.setTimeout(() => {
+      game.activeCards.forEach(card => {
+        card.classList.toggle("show");
+      });
+      game.activeCards = [];
+      game.freeze = false;
+    }, 750);
   }
-  game.activeCards = [];
 }
 
 function handleCardClick(e) {
@@ -135,7 +125,7 @@ function handleCardClick(e) {
     return;
   }
 
-  flipCard(card);
+  card.classList.toggle("show");
   game.activeCards.push(card);
 
   if (game.activeCards.length === 2) {
@@ -147,13 +137,11 @@ function handleCardClick(e) {
 }
 
 function createDeck() {
-  // Double the number of icons so it's ready to become a game deck.
-  const icons = [...cardIcons, ...cardIcons];
+  const cardFaces = [...cardIcons, ...cardIcons];
 
-  // Create the different card types as <li> elements.
-  const deck = icons.map(iconClassName => {
+  const deck = cardFaces.map(cardFaceName => {
     const icon = document.createElement("i");
-    icon.classList.add("fa", iconClassName);
+    icon.classList.add("fa", cardFaceName);
 
     const card = document.createElement("li");
     card.classList.add("card");
@@ -164,7 +152,6 @@ function createDeck() {
 
     return card;
   });
-
   return shuffle(deck);
 }
 
@@ -194,4 +181,4 @@ function init() {
 newGameButton.addEventListener("click", init);
 restartElement.addEventListener("click", init);
 
-init();
+document.addEventListener("DOMContentLoaded", init);
