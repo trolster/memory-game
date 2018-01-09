@@ -26,28 +26,28 @@ function createTimeDisplayString() {
 
 // CACHED ELEMENTS
 const scorePanelStarElements = document.querySelectorAll(
-  ".score-panel .stars .fa"
+  '.score-panel .stars .fa'
 );
-const timerElement = document.querySelector(".timer");
-const movesElement = document.querySelector(".moves");
-const restartElement = document.querySelector(".restart");
-const deckElement = document.querySelector(".deck");
-const modalElement = document.querySelector(".modal");
-const modalStarElements = document.querySelectorAll(".modal-stars .fa");
-const modalTimeElement = document.querySelector(".time");
-const modalScoreElement = document.querySelector(".score");
-const newGameButton = document.querySelector(".new-game");
+const timerElement = document.querySelector('.timer');
+const movesElement = document.querySelector('.moves');
+const restartElement = document.querySelector('.restart');
+const deckElement = document.querySelector('.deck');
+const modalElement = document.querySelector('.modal');
+const modalStarElements = document.querySelectorAll('.modal-stars .fa');
+const modalTimeElement = document.querySelector('.time');
+const modalScoreElement = document.querySelector('.score');
+const newGameButton = document.querySelector('.new-game');
 
 // Icons for the card faces
 const cardIcons = [
-  "fa-diamond",
-  "fa-paper-plane-o",
-  "fa-anchor",
-  "fa-bolt",
-  "fa-cube",
-  "fa-leaf",
-  "fa-bicycle",
-  "fa-bomb"
+  'fa-diamond',
+  'fa-paper-plane-o',
+  'fa-anchor',
+  'fa-bolt',
+  'fa-cube',
+  'fa-leaf',
+  'fa-bicycle',
+  'fa-bomb',
 ];
 
 // The checkpoints correspond to what the value of game.move is when we update
@@ -61,8 +61,8 @@ let timer;
 function startTimer() {
   // Remove the event listener from all the cards so it only starts on the
   // first click.
-  game.deck.forEach(card => {
-    card.removeEventListener("click", startTimer);
+  game.deck.forEach((card) => {
+    card.removeEventListener('click', startTimer);
   });
 
   timer = setInterval(() => {
@@ -79,7 +79,7 @@ function flipStarIcons() {
   game.stars = game.moves === 0 ? game.stars : (game.stars -= 1);
 
   function flip(icon, i) {
-    icon.classList = i >= game.stars ? "fa fa-star-o" : "fa fa-star";
+    icon.classList = i >= game.stars ? 'fa fa-star-o' : 'fa fa-star';
   }
   // Flip all the star icons in the page.
   scorePanelStarElements.forEach(flip);
@@ -89,7 +89,7 @@ function flipStarIcons() {
 function endGame() {
   // Scroll to the top of the window and display the modal.
   window.scrollTo(0, 0);
-  modalElement.style.display = "flex";
+  modalElement.style.display = 'flex';
 
   window.clearInterval(timer);
 
@@ -105,8 +105,8 @@ function checkForMatch() {
 
   if (isMatch) {
     game.matchedPairs += 1;
-    card1.classList.add("match");
-    card2.classList.add("match");
+    card1.classList.add('match');
+    card2.classList.add('match');
     // Check if game has ended.
     if (game.matchedPairs === cardIcons.length) {
       endGame();
@@ -116,8 +116,8 @@ function checkForMatch() {
     // Avoid card interactions while two cards are being shown.
     game.isShowingTwoCards = true;
     window.setTimeout(() => {
-      game.activeCards.forEach(card => {
-        card.classList.toggle("show");
+      game.activeCards.forEach((card) => {
+        card.classList.toggle('show');
       });
       game.activeCards = [];
       game.isShowingTwoCards = false;
@@ -129,14 +129,14 @@ function handleCardClick(e) {
   // Ignore clicks when two cards are being shown.
   if (game.isShowingTwoCards) return;
 
-  const card = e.target.tagName === "I" ? e.target.parentElement : e.target;
+  const card = e.target.tagName === 'I' ? e.target.parentElement : e.target;
 
   // Ignore click if the card is already open.
-  if (card.classList.contains("show") || card.classList.contains("match")) {
+  if (card.classList.contains('show') || card.classList.contains('match')) {
     return;
   }
 
-  card.classList.toggle("show");
+  card.classList.toggle('show');
   game.activeCards.push(card);
 
   if (game.activeCards.length === 2) {
@@ -151,16 +151,16 @@ function createDeck() {
   // Double the number of cardIcons in the list.
   const cardFaces = [...cardIcons, ...cardIcons];
 
-  const deck = cardFaces.map(cardFaceName => {
-    const icon = document.createElement("i");
-    icon.classList.add("fa", cardFaceName);
+  const deck = cardFaces.map((cardFaceName) => {
+    const icon = document.createElement('i');
+    icon.classList.add('fa', cardFaceName);
 
-    const card = document.createElement("li");
-    card.classList.add("card");
+    const card = document.createElement('li');
+    card.classList.add('card');
     card.append(icon);
 
-    card.addEventListener("click", handleCardClick);
-    card.addEventListener("click", startTimer);
+    card.addEventListener('click', handleCardClick);
+    card.addEventListener('click', startTimer);
 
     return card;
   });
@@ -169,12 +169,12 @@ function createDeck() {
 
 function init() {
   window.clearInterval(timer);
-  modalElement.style.display = "none";
+  modalElement.style.display = 'none';
 
   game.time = 0;
   game.moves = 0;
   game.stars = 3;
-  game.timeDisplay = "00:00";
+  game.timeDisplay = '00:00';
   game.deck = createDeck();
   game.matchedPairs = 0;
   game.activeCards = [];
@@ -184,13 +184,13 @@ function init() {
   movesElement.innerHTML = game.moves;
   timerElement.innerHTML = game.timeDisplay;
 
-  deckElement.innerHTML = "";
-  game.deck.forEach(card => {
+  deckElement.innerHTML = '';
+  game.deck.forEach((card) => {
     deckElement.appendChild(card);
   });
 }
 
-newGameButton.addEventListener("click", init);
-restartElement.addEventListener("click", init);
+newGameButton.addEventListener('click', init);
+restartElement.addEventListener('click', init);
 
-document.addEventListener("DOMContentLoaded", init);
+document.addEventListener('DOMContentLoaded', init);
