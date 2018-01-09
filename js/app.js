@@ -53,7 +53,7 @@ const cardIcons = [
 // The checkpoints correspond to what the value of game.move is when we update
 // the star rating. So you get three stars up until the 11th move, then two
 // stars until the 20th move, and finally zero stars at the 30th move.
-const starCheckpoints = [0, 12, 20, 30];
+const starCheckpoints = [0, 12, 20];
 
 const game = {};
 let timer;
